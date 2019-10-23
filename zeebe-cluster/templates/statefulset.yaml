@@ -54,7 +54,7 @@ spec:
           initialDelaySeconds: 20
           periodSeconds: 5
         resources:
-          {{- toYaml .Values.resources | nindent 12 }}
+          {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         - name: config
           mountPath: /usr/local/zeebe/conf/zeebe.cfg.toml
@@ -62,18 +62,19 @@ spec:
         - name: config
           mountPath: /usr/local/bin/startup.sh
           subPath: startup.sh
+{{- if .Values.data.enabled }}
         - name: data
           mountPath: /usr/local/zeebe/data
+{{- end }}
       volumes:
       - name: config
         configMap:
           name: {{ include "zeebe-cluster.fullname" . }}
           defaultMode: 0744
+{{- if .Values.data.enabled }}
   volumeClaimTemplates:
   - metadata:
       name: data
     spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 5Gi
+{{ toYaml .Values.data.volumeClaimTemplate | indent 8 }}
+{{- end }}
